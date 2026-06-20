@@ -264,7 +264,7 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
             <Label htmlFor="inst-name">Institute Name</Label>
             <Input
               id="inst-name"
-              placeholder="e.g. Dhaka Polytechnic Institute"
+              placeholder="e.g. Graphic Arts Institute, Dhaka"
               value={instituteName}
               onChange={(e) => setInstituteName(e.target.value)}
             />

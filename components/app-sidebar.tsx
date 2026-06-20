@@ -29,15 +29,15 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border">
         <Image
-          src="/logo.png"
+          src="/gailogo.png"
           alt="GAI Logo"
-          width={40}
-          height={40}
+          width={60}
+          height={60}
           className="shrink-0 rounded object-contain"
         />
         <div className="min-w-0">
-          <p className="text-sm font-semibold leading-tight truncate">GAI</p>
-          <p className="text-xs text-muted-foreground leading-tight truncate">
+          <p className="text-base font-semibold leading-tight truncate">GAI</p>
+          <p className="text-base text-muted-foreground leading-tight truncate">
             Seat Planner
           </p>
         </div>
