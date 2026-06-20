@@ -40,7 +40,7 @@ export function MobileNav() {
           <Menu className="size-5" />
         </button>
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Image src="/logo.png" alt="GAI Logo" width={28} height={28} className="shrink-0 rounded object-contain" />
+          <Image src="/gailogo.png" alt="GAI Logo" width={28} height={28} className="shrink-0 rounded object-contain" />
           <span className="font-semibold text-sm truncate">GAI Seat Planner</span>
         </div>
         <ThemeToggle />
