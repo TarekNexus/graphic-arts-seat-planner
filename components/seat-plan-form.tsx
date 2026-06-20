@@ -25,7 +25,7 @@ const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 const SHIFTS: { value: Shift; label: string }[] = [
   { value: "1", label: "1st Shift (Morning)" },
   { value: "2", label: "2nd Shift (Day)" },
-  { value: "3", label: "3rd Shift (Evening)" },
+  
 ];
 const PATTERNS: { value: Pattern; label: string; desc: string }[] = [
   { value: "C", label: "Pattern C – Column-wise", desc: "Each group fills full columns, interleaved to separate departments (Polytechnic board format)" },
@@ -475,69 +475,82 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
                 </div>
 
                 {/* Dept / Semester / Shift */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
-                    <Label>Department</Label>
-                    <Select
-                      value={g.departmentId}
-                      onValueChange={(v) => updateGroup(g.id, { departmentId: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select dept" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((d) => (
-                          <SelectItem key={d.id} value={d.id}>
-                            {d.shortCode} – {d.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {departments.length === 0 && (
-                      <p className="text-xs text-destructive">
-                        <a href="/departments" className="underline">Add departments first</a>
-                      </p>
-                    )}
-                  </div>
+               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+  {/* Department */}
+  <div className="space-y-1.5 w-full">
+    <Label>Department</Label>
 
-                  <div className="space-y-1.5">
-                    <Label>Semester</Label>
-                    <Select
-                      value={g.semester}
-                      onValueChange={(v) => updateGroup(g.id, { semester: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SEMESTERS.map((s) => (
-                          <SelectItem key={s} value={String(s)}>
-                            {s}{ORDINAL[s] ?? "th"} Semester
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+    <Select
+      value={g.departmentId}
+      onValueChange={(v) => updateGroup(g.id, { departmentId: v })}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select dept" />
+      </SelectTrigger>
 
-                  <div className="space-y-1.5">
-                    <Label>Shift</Label>
-                    <Select
-                      value={g.shift}
-                      onValueChange={(v) => updateGroup(g.id, { shift: v as Shift })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SHIFTS.map((s) => (
-                          <SelectItem key={s.value} value={s.value}>
-                            {s.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+      <SelectContent>
+        {departments.map((d) => (
+          <SelectItem key={d.id} value={d.id}>
+            {d.shortCode} – {d.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+
+    {departments.length === 0 && (
+      <p className="text-xs text-destructive">
+        <a href="/departments" className="underline">
+          Add departments first
+        </a>
+      </p>
+    )}
+  </div>
+
+  {/* Semester */}
+  <div className="space-y-1.5 w-full">
+    <Label>Semester</Label>
+
+    <Select
+      value={g.semester}
+      onValueChange={(v) => updateGroup(g.id, { semester: v })}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select semester" />
+      </SelectTrigger>
+
+      <SelectContent>
+        {SEMESTERS.map((s) => (
+          <SelectItem key={s} value={String(s)}>
+            {s}
+            {ORDINAL[s] ?? "th"} Semester
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+
+  {/* Shift */}
+  <div className="space-y-1.5 w-full">
+    <Label>Shift</Label>
+
+    <Select
+      value={g.shift}
+      onValueChange={(v) => updateGroup(g.id, { shift: v as Shift })}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select shift" />
+      </SelectTrigger>
+
+      <SelectContent>
+        {SHIFTS.map((s) => (
+          <SelectItem key={s.value} value={s.value}>
+            {s.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+</div>
 
                 {/* Roll input — Range or Custom List */}
                 {g.rollMode === "range" ? (

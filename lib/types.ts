@@ -14,8 +14,8 @@ export interface Room {
   createdAt: string;
 }
 
-export type Shift = "1" | "2" | "3"; // 1=Morning/1ST, 2=Day/2ND, 3=Evening
-export type RollMode = "range" | "list"; // range = sequential, list = custom/scattered
+export type Shift = "1" | "2" ; 
+export type RollMode = "range" | "list"; 
 
 export interface SeatGroup {
   id: string;
@@ -24,17 +24,17 @@ export interface SeatGroup {
   semester: number;
   shift: Shift;
   rollMode: RollMode;
-  rollStart: string;  // used when rollMode = "range"
-  rollEnd: string;    // used when rollMode = "range"
-  rollList: string[]; // used when rollMode = "list" — actual roll numbers
+  rollStart: string;  
+  rollEnd: string;    
+  rollList: string[]; 
   count: number;
 }
 
 export type Pattern = "A" | "B" | "C" | "D";
 
 export interface SeatCell {
-  label: string;    // e.g. "1CST1"
-  roll: string;     // e.g. "103703"
+  label: string;    
+  roll: string;     
   groupId: string;
 }
 
