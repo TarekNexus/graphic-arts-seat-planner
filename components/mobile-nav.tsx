@@ -65,7 +65,7 @@ export function MobileNav() {
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-sidebar-border">
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="GAI Logo" width={36} height={36} className="shrink-0 rounded object-contain" />
+            <Image src="/gailogo.png" alt="GAI Logo" width={36} height={36} className="shrink-0 rounded object-contain" />
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-tight">GAI</p>
               <p className="text-xs text-muted-foreground leading-tight">Seat Planner</p>
