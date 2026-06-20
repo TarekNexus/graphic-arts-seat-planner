@@ -3,16 +3,15 @@
 import { Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/page-header";
 
 export default function StudentsPage() {
   return (
     <div className="w-full md:px-6 px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold">Students</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Students are defined per seat plan as roll number ranges or custom lists.
-        </p>
-      </div>
+      <PageHeader
+        title="Students"
+        description="Students are defined per seat plan as roll number ranges or custom lists."
+      />
 
       <div className="border rounded-lg p-5 bg-muted/30 space-y-4">
         <div className="flex gap-3">

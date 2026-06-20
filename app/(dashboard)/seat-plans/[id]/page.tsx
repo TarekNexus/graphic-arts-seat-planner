@@ -124,15 +124,13 @@ export default function SeatPlanViewPage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* ── Printable content ────────────────────────────────────────────── */}
-      <div className="w-full md:px-6 px-4 py-4 print:w-full print:p-0">
+      <div className="w-full md:px-6 px-4 py-4 space-y-10 print:space-y-0 print:w-full print:p-0">
         {roomAllocations.map((allocation, idx) => (
           <div
             key={allocation.roomId || idx}
-            className={
-              idx < roomAllocations.length - 1
-                ? "mb-10 pb-8 border-b border-dashed border-gray-300 print:mb-0 print:pb-0 print:border-0 print:break-after-page"
-                : ""
-            }
+            className={idx < roomAllocations.length - 1 ? "pb-8 border-b border-dashed border-border" : ""}
+            {...(idx > 0 ? { "data-room-break": "true" } : {})}
+            style={idx > 0 ? { breakBefore: "page", pageBreakBefore: "always" } : undefined}
           >
             {/* Room separator label (screen only, for multiple rooms) */}
             {roomAllocations.length > 1 && (
@@ -205,7 +203,7 @@ function RoomGrid({ allocation }: { allocation: RoomAllocation }) {
 
   return (
     <table
-      className="w-full border-collapse text-xs"
+      className="w-full border-collapse text-sm"
       style={{ tableLayout: "fixed", minWidth: `${minWidth}px` }}
     >
       <thead>
@@ -224,7 +222,7 @@ function RoomGrid({ allocation }: { allocation: RoomAllocation }) {
       <tbody>
         {allocation.grid.map((row, rowIdx) => (
           <tr key={rowIdx}>
-            <td className="border border-border print:border-black p-0.5 text-center text-[10px] font-medium align-middle bg-muted/60 print:bg-gray-100">
+            <td className="border border-border print:border-black p-1 text-center text-xs font-medium align-middle bg-muted/60 print:bg-gray-100 h-12.5">
               {rowIdx + 1}
             </td>
             {row.map((cell, colIdx) => (
@@ -238,11 +236,11 @@ function RoomGrid({ allocation }: { allocation: RoomAllocation }) {
 }
 
 function SeatCellTd({ cell }: { cell: SeatCell | null }) {
-  if (!cell) return <td className="border border-border print:border-black p-1" />;
+  if (!cell) return <td className="border border-border print:border-black p-1 h-12.5" />;
   return (
-    <td className="border border-border print:border-black p-0.5 text-center align-middle">
-      <div className="font-semibold leading-tight">{cell.label}</div>
-      <div className="font-mono leading-tight">{cell.roll}</div>
+    <td className="border border-border print:border-black p-1.5 text-center align-middle h-12.5">
+      <div className="font-semibold leading-snug text-sm">{cell.label}</div>
+      <div className="font-mono leading-snug text-sm">{cell.roll}</div>
     </td>
   );
 }

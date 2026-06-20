@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Plus, Eye, Trash2, ClipboardList } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -34,38 +35,38 @@ export default function SeatPlansPage() {
 
   return (
     <div className="w-full md:px-6 px-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold">Seat Plans</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            All generated seat plans. Click to preview and print.
-          </p>
-        </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/seat-plans/new"><Plus />Generate New</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Seat Plans"
+        description="All generated seat plans. Click to preview and print."
+        action={
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/seat-plans/new"><Plus />Generate New</Link>
+          </Button>
+        }
+      />
 
       {sorted.length === 0 ? (
-        <div className="text-center py-24 border border-dashed rounded-lg space-y-3">
-          <ClipboardList className="size-10 mx-auto text-muted-foreground/50" />
+        <div className="text-center py-24 border border-dashed border-primary/20 rounded-lg space-y-3">
+          <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <ClipboardList className="size-7 text-primary" />
+          </div>
           <p className="text-muted-foreground">No seat plans yet.</p>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="border-primary/40 hover:border-primary hover:bg-primary/5 hover:text-primary">
             <Link href="/seat-plans/new">Generate your first seat plan</Link>
           </Button>
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden overflow-x-auto">
+        <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden sm:table-cell">Rooms</TableHead>
-                <TableHead>Groups</TableHead>
-                <TableHead className="hidden md:table-cell">Pattern</TableHead>
-                <TableHead className="hidden sm:table-cell">Students</TableHead>
-                <TableHead className="hidden lg:table-cell">Created</TableHead>
-                <TableHead className="w-20 text-right">Actions</TableHead>
+              <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="font-semibold">Title</TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold">Rooms</TableHead>
+                <TableHead className="font-semibold">Groups</TableHead>
+                <TableHead className="hidden md:table-cell font-semibold">Pattern</TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold">Students</TableHead>
+                <TableHead className="hidden lg:table-cell font-semibold">Created</TableHead>
+                <TableHead className="w-20 text-right font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -74,53 +75,55 @@ export default function SeatPlansPage() {
                 const roomLabel = planRoomLabel(plan);
                 const roomCount = plan.roomAllocations?.length ?? 1;
                 return (
-                  <TableRow key={plan.id}>
+                  <TableRow key={plan.id} className="hover:bg-primary/5 transition-colors group">
                     <TableCell className="font-medium">
-                      <div>{plan.title}</div>
-                      <div className="text-xs text-muted-foreground sm:hidden">
+                      <Link href={`/seat-plans/${plan.id}`} className="hover:text-primary transition-colors">
+                        {plan.title}
+                      </Link>
+                      <div className="text-xs text-muted-foreground sm:hidden mt-0.5">
                         {roomCount > 1 ? `${roomCount} rooms` : `Room ${roomLabel}`} · {total} students
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <div className="flex items-center gap-1 flex-wrap">
-                        <span>{roomLabel}</span>
+                        <span className="text-sm font-medium">{roomLabel}</span>
                         {roomCount > 1 && (
-                          <Badge variant="secondary" className="text-xs">{roomCount} rooms</Badge>
+                          <Badge className="text-xs bg-primary/10 text-primary border border-primary/20">{roomCount} rooms</Badge>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {plan.seatGroups.slice(0, 3).map((g) => (
-                          <Badge key={g.id} variant="secondary" className="font-mono text-xs">
+                          <Badge key={g.id} className="font-mono text-xs bg-primary/10 text-primary border border-primary/20">
                             {g.semester}{g.departmentCode}{g.shift}
                           </Badge>
                         ))}
                         {plan.seatGroups.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs border-border">
                             +{plan.seatGroups.length - 3}
                           </Badge>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <Badge variant="outline">{PATTERN_LABELS[plan.pattern] ?? plan.pattern}</Badge>
+                      <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+                        {PATTERN_LABELS[plan.pattern] ?? plan.pattern}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{total}</TableCell>
+                    <TableCell className="hidden sm:table-cell font-medium">{total}</TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
                       {new Date(plan.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon-sm" asChild>
+                        <Button variant="ghost" size="icon-sm"
+                          className="hover:text-primary hover:bg-primary/10" asChild>
                           <Link href={`/seat-plans/${plan.id}`}><Eye /></Link>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setDeleteId(plan.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
+                        <Button variant="ghost" size="icon-sm"
+                          className="hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteId(plan.id)}>
                           <Trash2 />
                         </Button>
                       </div>

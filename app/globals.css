@@ -129,14 +129,26 @@
   }
 }
 
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
 @media print {
-  body {
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
     background: white !important;
     color: black !important;
   }
 
-  @page {
-    size: A4 landscape;
-    margin: 10mm;
+  main, div, section {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  [data-room-break] {
+    break-before: page !important;
+    page-break-before: always !important;
   }
 }

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useStore } from "@/lib/store";
+import { PageHeader } from "@/components/page-header";
 import type { Room } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -49,47 +51,51 @@ export default function RoomsPage() {
 
   return (
     <div className="w-full md:px-6 px-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold">Rooms</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage exam rooms and seating capacity.
-          </p>
-        </div>
-        <Button onClick={openAdd} className="w-full sm:w-auto">
-          <Plus />
-          Add Room
-        </Button>
-      </div>
+      <PageHeader
+        title="Rooms"
+        description="Manage exam rooms and seating capacity."
+        action={
+          <Button onClick={openAdd} className="w-full sm:w-auto">
+            <Plus />Add Room
+          </Button>
+        }
+      />
 
       {rooms.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground border border-dashed rounded-lg">
+        <div className="text-center py-20 text-muted-foreground border border-dashed border-primary/20 rounded-lg">
           No rooms yet. Add your first room.
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden overflow-x-auto">
+        <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Room</TableHead>
-                <TableHead className="hidden sm:table-cell">Rows</TableHead>
-                <TableHead className="hidden sm:table-cell">Columns</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead className="w-20 text-right">Actions</TableHead>
+              <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="font-semibold">Room</TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold">Rows</TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold">Columns</TableHead>
+                <TableHead className="font-semibold">Capacity</TableHead>
+                <TableHead className="w-20 text-right font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rooms.map((room) => (
-                <TableRow key={room.id}>
-                  <TableCell className="font-medium">{room.number}</TableCell>
+                <TableRow key={room.id} className="hover:bg-primary/5 transition-colors">
+                  <TableCell className="font-semibold text-primary">{room.number}</TableCell>
                   <TableCell className="hidden sm:table-cell">{room.rows}</TableCell>
                   <TableCell className="hidden sm:table-cell">{room.columns}</TableCell>
-                  <TableCell>{room.capacity}</TableCell>
+                  <TableCell>
+                    <Badge className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
+                      {room.capacity} seats
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => openEdit(room)}><Pencil /></Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => setDeleteId(room.id)}
-                        className="text-destructive hover:text-destructive"><Trash2 /></Button>
+                      <Button variant="ghost" size="icon-sm"
+                        className="hover:text-primary hover:bg-primary/10"
+                        onClick={() => openEdit(room)}><Pencil /></Button>
+                      <Button variant="ghost" size="icon-sm"
+                        className="hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteId(room.id)}><Trash2 /></Button>
                     </div>
                   </TableCell>
                 </TableRow>

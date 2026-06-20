@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import type { SeatPlan } from "@/lib/types";
 import { SeatPlanForm, seatPlanFormDefaultValues } from "@/components/seat-plan-form";
+import { PageHeader } from "@/components/page-header";
 
 export default function EditSeatPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -24,12 +25,10 @@ export default function EditSeatPlanPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="w-full md:px-6 px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold">Edit Seat Plan</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Update details or student groups, then regenerate.
-        </p>
-      </div>
+      <PageHeader
+        title="Edit Seat Plan"
+        description="Update details or student groups, then regenerate."
+      />
       <SeatPlanForm existingPlanId={id} defaultValues={seatPlanFormDefaultValues(plan)} />
     </div>
   );

@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full overflow-hidden antialiased`}>
-      <body className="h-full overflow-hidden bg-background text-foreground">
+    <html lang="en" className={`${inter.variable} h-full overflow-hidden antialiased print:h-auto print:overflow-visible`} suppressHydrationWarning>
+      <body className="h-full overflow-hidden bg-background text-foreground print:h-auto print:overflow-visible">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster
