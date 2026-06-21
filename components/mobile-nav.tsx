@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -12,9 +12,12 @@ import {
   DoorOpen,
   Users,
   ClipboardList,
+  LogOut,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -27,6 +30,14 @@ const navItems = [
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    setOpen(false);
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    router.push("/login");
+  }
 
   return (
     <>
@@ -106,9 +117,24 @@ export function MobileNav() {
           })}
         </nav>
 
-        <div className="px-5 py-3 border-t border-sidebar-border">
-          <p className="text-xs text-muted-foreground">
-            Graphic Arts Institute Seat Planner
+        <div className="px-3 py-3 border-t border-sidebar-border space-y-2">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive hover:text-white transition-colors"
+          >
+            <LogOut className="size-4 shrink-0" />
+            Sign out
+          </button>
+          <p className="text-[11px] text-muted-foreground px-1">
+            Developed by{" "}
+            <a
+              href="https://tarekdeveloper.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline underline-offset-2"
+            >
+              Md. Tarek
+            </a>
           </p>
         </div>
       </div>
