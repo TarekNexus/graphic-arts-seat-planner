@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
   DoorOpen,
   Users,
   ClipboardList,
+  LogOut,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -23,6 +26,13 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    router.push("/login");
+  }
 
   return (
     <aside className="w-60 shrink-0 flex flex-col border-r border-sidebar-border bg-sidebar h-full">
@@ -69,11 +79,28 @@ export function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-sidebar-border flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Graphic Arts Institute<br />Seat Planner
+      <div className="px-3 py-3 border-t border-sidebar-border space-y-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleLogout}
+            className="flex flex-1 items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive hover:text-white transition-colors"
+          >
+            <LogOut className="size-4 shrink-0" />
+            Sign out
+          </button>
+          <ThemeToggle />
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-tight px-1">
+          Developed by{" "}
+          <a
+            href="https://tarekdeveloper.netlify.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline underline-offset-2"
+          >
+            Md. Tarek
+          </a>
         </p>
-        <ThemeToggle />
       </div>
     </aside>
   );
