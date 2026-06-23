@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 
 const PATTERN_LABELS: Record<string, string> = {
-  A: "Alternate", B: "Zigzag", C: "Column-wise", D: "Random",
+  A: "Alternate", B: "Zigzag", C: "Column-wise", D: "Random", E: "Board Format",
 };
 
 function planRoomLabel(plan: ReturnType<typeof useStore>["seatPlans"][number]): string {
@@ -64,6 +64,8 @@ export default function SeatPlansPage() {
                 <TableHead className="hidden sm:table-cell font-semibold">Rooms</TableHead>
                 <TableHead className="font-semibold">Groups</TableHead>
                 <TableHead className="hidden md:table-cell font-semibold">Pattern</TableHead>
+                <TableHead className="hidden md:table-cell font-semibold">Shift</TableHead>
+                <TableHead className="hidden lg:table-cell font-semibold">Time</TableHead>
                 <TableHead className="hidden sm:table-cell font-semibold">Students</TableHead>
                 <TableHead className="hidden lg:table-cell font-semibold">Created</TableHead>
                 <TableHead className="w-20 text-right font-semibold">Actions</TableHead>
@@ -110,6 +112,20 @@ export default function SeatPlansPage() {
                       <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                         {PATTERN_LABELS[plan.pattern] ?? plan.pattern}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {plan.examShift ? (
+                        <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+                          {plan.examShift === "1" ? "1st Shift" : "2nd Shift"}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
+                      {plan.examTime
+                        ? new Date(`1970-01-01T${plan.examTime}`).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true })
+                        : "—"}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell font-medium">{total}</TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">

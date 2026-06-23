@@ -28,6 +28,7 @@ function getRolls(group: SeatGroup): string[] {
 }
 
 function makeLabel(group: SeatGroup): string {
+  if (group.groupCode) return `${group.semester}${group.departmentCode}-${group.groupCode}`;
   return `${group.semester}${group.departmentCode}${group.shift}`;
 }
 
@@ -202,6 +203,96 @@ function fillPatternD(rows: number, cols: number, queues: Queue[]): (SeatCell | 
   return grid;
 }
 
+/**
+ * Pattern E – Pair Interleaved (Bangladesh Polytechnic Board Format).
+ *
+ * Columns are assigned to groups proportionally and interleaved so no two
+ * adjacent columns share the same group. Columns are then processed in pairs.
+ *
+ * Within each pair (col_a, col_b) with groups (A, B), seats are filled
+ * ROW-FIRST using a checkerboard: position (row, local_col) gets group A when
+ * (row + local_col) % 2 == 0, else group B. This means:
+ *   - Group A's odd-indexed rolls go to col_a (even rows)
+ *   - Group A's even-indexed rolls go to col_b (odd rows)
+ * Producing the "odd rolls in one column, even rolls in the adjacent column"
+ * pattern visible in the official printed seat plans.
+ *
+ * For a solo last column (odd total cols), it alternates row-by-row between
+ * its assigned group and the group with the most remaining rolls.
+ */
+function fillPatternE(rows: number, cols: number, queues: Queue[]): (SeatCell | null)[][] {
+  const grid: (SeatCell | null)[][] = Array.from({ length: rows }, () => Array(cols).fill(null));
+  const active = queues.filter((q) => q.rolls.length > 0);
+  if (active.length === 0) return grid;
+  if (active.length === 1) {
+    for (let col = 0; col < cols; col++)
+      for (let row = 0; row < rows && active[0].rolls.length > 0; row++)
+        grid[row][col] = { label: active[0].label, roll: active[0].rolls.shift()!, groupId: active[0].groupId };
+    return grid;
+  }
+
+  // Proportional column counts per group
+  const totalRemaining = active.reduce((s, q) => s + q.rolls.length, 0);
+  const colsPerGroup = active.map((q) => Math.max(1, Math.ceil((q.rolls.length / totalRemaining) * cols)));
+  let totalCols = colsPerGroup.reduce((a, b) => a + b, 0);
+  while (totalCols > cols) { const m = colsPerGroup.indexOf(Math.max(...colsPerGroup)); colsPerGroup[m]--; totalCols--; }
+  while (totalCols < cols) { const m = active.reduce((b, q, i) => q.rolls.length > active[b].rolls.length ? i : b, 0); colsPerGroup[m]++; totalCols++; }
+
+  // Interleaved column-to-group map: adjacent columns always have different groups
+  const counts = [...colsPerGroup];
+  const colGroupIdx: number[] = [];
+  while (colGroupIdx.length < cols) {
+    let placed = false;
+    for (let i = 0; i < counts.length; i++) {
+      if (counts[i] > 0 && colGroupIdx[colGroupIdx.length - 1] !== i) {
+        colGroupIdx.push(i); counts[i]--; placed = true; break;
+      }
+    }
+    if (!placed) for (let i = 0; i < counts.length; i++) {
+      if (counts[i] > 0) { colGroupIdx.push(i); counts[i]--; break; }
+    }
+  }
+
+  // Fill columns in pairs, row-by-row, with checkerboard assignment
+  let col = 0;
+  while (col < cols) {
+    const aIdx = colGroupIdx[col];
+    const groupA = active[aIdx];
+    let groupB: Queue;
+    let span: number;
+
+    if (col + 1 < cols) {
+      // Full pair
+      groupB = active[colGroupIdx[col + 1]];
+      span = 2;
+    } else {
+      // Solo last column: alternate with whichever group has most remaining rolls
+      const best = active.reduce<Queue | null>((b, q, i) => {
+        if (i === aIdx) return b;
+        return !b || q.rolls.length > b.rolls.length ? q : b;
+      }, null);
+      groupB = best ?? groupA;
+      span = 1;
+    }
+
+    for (let row = 0; row < rows; row++) {
+      for (let l = 0; l < span; l++) {
+        const gi = (row + l) % 2;
+        const preferred = gi === 0 ? groupA : groupB;
+        const fallback  = gi === 0 ? groupB  : groupA;
+        const q = preferred.rolls.length > 0 ? preferred
+                : fallback.rolls.length  > 0 ? fallback
+                : queues.find((x) => x.rolls.length > 0) ?? null;
+        if (q) grid[row][col + l] = { label: q.label, roll: q.rolls.shift()!, groupId: q.groupId };
+      }
+    }
+
+    col += span;
+  }
+
+  return grid;
+}
+
 function fillRoom(
   rows: number,
   cols: number,
@@ -213,6 +304,7 @@ function fillRoom(
     case "B": return fillPatternB(rows, cols, queues);
     case "C": return fillPatternC(rows, cols, queues);
     case "D": return fillPatternD(rows, cols, queues);
+    case "E": return fillPatternE(rows, cols, queues);
     default:  return fillPatternC(rows, cols, queues);
   }
 }

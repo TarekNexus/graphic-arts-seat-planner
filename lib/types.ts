@@ -23,14 +23,15 @@ export interface SeatGroup {
   departmentCode: string;
   semester: number;
   shift: Shift;
+  groupCode?: string;
   rollMode: RollMode;
-  rollStart: string;  
-  rollEnd: string;    
-  rollList: string[]; 
+  rollStart: string;
+  rollEnd: string;
+  rollList: string[];
   count: number;
 }
 
-export type Pattern = "A" | "B" | "C" | "D";
+export type Pattern = "A" | "B" | "C" | "D" | "E";
 
 export interface SeatCell {
   label: string;    
@@ -51,6 +52,8 @@ export interface SeatPlan {
   title: string;
   instituteName: string;
   examDate: string;
+  examTime?: string;
+  examShift?: "1" | "2";
   pattern: Pattern;
   seatGroups: SeatGroup[];
   /** Primary: one allocation per selected room */

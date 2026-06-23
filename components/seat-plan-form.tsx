@@ -28,10 +28,10 @@ const SHIFTS: { value: Shift; label: string }[] = [
   
 ];
 const PATTERNS: { value: Pattern; label: string; desc: string }[] = [
-  { value: "C", label: "Pattern C – Column-wise", desc: "Each group fills full columns, interleaved to separate departments (Polytechnic board format)" },
+  { value: "E", label: "Pattern E – Interleaved (Anti-Cheat)", desc: "Department Interleaved: round-robin column-wise so no two adjacent seats (horizontal or vertical) share the same department" },
+  { value: "C", label: "Pattern C – Column-wise", desc: "Each group fills full columns, interleaved to separate departments" },
   { value: "A", label: "Pattern A – Alternate", desc: "Groups alternate by column in round-robin order" },
   { value: "B", label: "Pattern B – Zigzag", desc: "Cycle through groups cell-by-cell across rows" },
-  { value: "D", label: "Pattern D – Random Mix", desc: "Randomly distribute all students" },
 ];
 
 const ORDINAL: Record<number, string> = { 1: "st", 2: "nd", 3: "rd" };
@@ -41,6 +41,7 @@ export interface GroupDraft {
   departmentId: string;
   semester: string;
   shift: Shift;
+  groupCode: string;
   rollMode: RollMode;
   rollStart: string;
   rollEnd: string;
@@ -54,6 +55,7 @@ function newGroupDraft(): GroupDraft {
     departmentId: "",
     semester: "1",
     shift: "1",
+    groupCode: "",
     rollMode: "range",
     rollStart: "",
     rollEnd: "",
@@ -73,11 +75,12 @@ export function seatPlanFormDefaultValues(plan: SeatPlan): {
   title: string;
   instituteName: string;
   examDate: string;
+  examTime: string;
+  examShift: "1" | "2" | "";
   roomIds: string[];
   pattern: Pattern;
   groups: GroupDraft[];
 } {
-  // Derive roomIds from new format or fall back to legacy single room
   const roomIds =
     plan.roomAllocations?.length > 0
       ? plan.roomAllocations.map((r) => r.roomId)
@@ -89,6 +92,8 @@ export function seatPlanFormDefaultValues(plan: SeatPlan): {
     title: plan.title,
     instituteName: plan.instituteName,
     examDate: plan.examDate,
+    examTime: plan.examTime ?? "",
+    examShift: plan.examShift ?? "",
     roomIds,
     pattern: plan.pattern,
     groups: plan.seatGroups.map((g) => ({
@@ -96,6 +101,7 @@ export function seatPlanFormDefaultValues(plan: SeatPlan): {
       departmentId: g.departmentId,
       semester: String(g.semester),
       shift: g.shift,
+      groupCode: g.groupCode ?? "",
       rollMode: g.rollMode ?? "range",
       rollStart: g.rollStart,
       rollEnd: g.rollEnd,
@@ -117,8 +123,10 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
   const [title, setTitle] = useState(defaultValues?.title ?? "");
   const [instituteName, setInstituteName] = useState(defaultValues?.instituteName ?? "");
   const [examDate, setExamDate] = useState(defaultValues?.examDate ?? "");
+  const [examTime, setExamTime] = useState(defaultValues?.examTime ?? "");
+  const [examShift, setExamShift] = useState<"1" | "2" | "">(defaultValues?.examShift ?? "");
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>(defaultValues?.roomIds ?? []);
-  const [pattern, setPattern] = useState<Pattern>(defaultValues?.pattern ?? "C");
+  const [pattern, setPattern] = useState<Pattern>(defaultValues?.pattern ?? "E");
   const [groups, setGroups] = useState<GroupDraft[]>(
     defaultValues?.groups ?? [newGroupDraft()]
   );
@@ -156,7 +164,7 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
     setGroups((prev) => prev.filter((g) => g.id !== id));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -180,6 +188,7 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
           departmentCode: dept.shortCode,
           semester: parseInt(g.semester, 10),
           shift: g.shift,
+          groupCode: g.groupCode.trim() || undefined,
           rollMode: "range",
           rollStart: g.rollStart.trim(),
           rollEnd: g.rollEnd.trim(),
@@ -197,6 +206,7 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
           departmentCode: dept.shortCode,
           semester: parseInt(g.semester, 10),
           shift: g.shift,
+          groupCode: g.groupCode.trim() || undefined,
           rollMode: "list",
           rollStart: rollList[0],
           rollEnd: rollList[rollList.length - 1],
@@ -230,6 +240,8 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
       title: title.trim() || "Seat Plan",
       instituteName: instituteName.trim(),
       examDate,
+      examTime: examTime || undefined,
+      examShift: examShift || undefined,
       pattern,
       seatGroups: validGroups,
       roomAllocations,
@@ -286,6 +298,30 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="exam-time">Exam Time</Label>
+            <Input
+              id="exam-time"
+              type="time"
+              value={examTime}
+              onChange={(e) => setExamTime(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Shift</Label>
+            <Select
+              value={examShift}
+              onValueChange={(v) => setExamShift(v as "1" | "2" | "")}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select shift" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1st Shift (Morning)</SelectItem>
+                <SelectItem value="2">2nd Shift (Day)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </section>
@@ -475,11 +511,10 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
                 </div>
 
                 {/* Dept / Semester / Shift */}
-               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full">
   {/* Department */}
   <div className="space-y-1.5 w-full">
     <Label>Department</Label>
-
     <Select
       value={g.departmentId}
       onValueChange={(v) => updateGroup(g.id, { departmentId: v })}
@@ -487,7 +522,6 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select dept" />
       </SelectTrigger>
-
       <SelectContent>
         {departments.map((d) => (
           <SelectItem key={d.id} value={d.id}>
@@ -496,12 +530,9 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
         ))}
       </SelectContent>
     </Select>
-
     {departments.length === 0 && (
       <p className="text-xs text-destructive">
-        <a href="/departments" className="underline">
-          Add departments first
-        </a>
+        <a href="/departments" className="underline">Add departments first</a>
       </p>
     )}
   </div>
@@ -509,7 +540,6 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
   {/* Semester */}
   <div className="space-y-1.5 w-full">
     <Label>Semester</Label>
-
     <Select
       value={g.semester}
       onValueChange={(v) => updateGroup(g.id, { semester: v })}
@@ -517,12 +547,10 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select semester" />
       </SelectTrigger>
-
       <SelectContent>
         {SEMESTERS.map((s) => (
           <SelectItem key={s} value={String(s)}>
-            {s}
-            {ORDINAL[s] ?? "th"} Semester
+            {s}{ORDINAL[s] ?? "th"} Semester
           </SelectItem>
         ))}
       </SelectContent>
@@ -532,7 +560,6 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
   {/* Shift */}
   <div className="space-y-1.5 w-full">
     <Label>Shift</Label>
-
     <Select
       value={g.shift}
       onValueChange={(v) => updateGroup(g.id, { shift: v as Shift })}
@@ -540,7 +567,6 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select shift" />
       </SelectTrigger>
-
       <SelectContent>
         {SHIFTS.map((s) => (
           <SelectItem key={s.value} value={s.value}>
@@ -549,6 +575,18 @@ export function SeatPlanForm({ existingPlanId, defaultValues }: Props) {
         ))}
       </SelectContent>
     </Select>
+  </div>
+
+  {/* Group Code */}
+  <div className="space-y-1.5 w-full">
+    <Label>Group Code</Label>
+    <Input
+      placeholder="e.g. GAI, DTI, SIPI"
+      value={g.groupCode}
+      onChange={(e) => updateGroup(g.id, { groupCode: e.target.value })}
+      className="font-mono"
+    />
+    <p className="text-xs text-muted-foreground">Used in cell label & summary</p>
   </div>
 </div>
 

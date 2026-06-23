@@ -27,17 +27,32 @@ function getRoomAllocations(plan: SeatPlan): RoomAllocation[] {
   return [];
 }
 
-function groupSummary(plan: SeatPlan): string {
+function roomSummary(allocation: RoomAllocation, plan: SeatPlan): string {
+  // Count rolls per group from the actual grid of this room
+  const rollsByGroup = new Map<string, string[]>();
+  for (const row of allocation.grid) {
+    for (const cell of row) {
+      if (!cell) continue;
+      if (!rollsByGroup.has(cell.groupId)) rollsByGroup.set(cell.groupId, []);
+      rollsByGroup.get(cell.groupId)!.push(cell.roll);
+    }
+  }
+
   return plan.seatGroups
+    .filter((g) => rollsByGroup.has(g.id))
     .map((g) => {
-      const shiftLabel = g.shift === "1" ? "1ST" : g.shift === "2" ? "2ND" : "3RD";
-      const rollRange =
-        g.rollMode === "list"
-          ? `${g.rollList?.[0] ?? ""}…${g.rollList?.[g.rollList.length - 1] ?? ""}=${g.count}`
-          : `${g.rollStart}-${g.rollEnd}=${g.count}`;
+      const rolls = rollsByGroup.get(g.id)!;
+      const count = rolls.length;
+      const first = rolls[0];
+      const last = rolls[rolls.length - 1];
+      const rollRange = `${first}-${last} = ${count}`;
+      if (g.groupCode) {
+        return `${g.groupCode}(${g.departmentCode}): ${rollRange}`;
+      }
+      const shiftLabel = g.shift === "1" ? "1ST" : "2ND";
       return `${g.semester}${g.departmentCode}(${shiftLabel}): ${rollRange}`;
     })
-    .join("  |  ");
+    .join(";  ");
 }
 
 export default function SeatPlanViewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,7 +85,15 @@ export default function SeatPlanViewPage({ params }: { params: Promise<{ id: str
   const generatedDate = new Date(plan.createdAt).toLocaleDateString("en-GB", {
     day: "2-digit", month: "long", year: "numeric",
   });
-  const summary = groupSummary(plan);
+  const shiftLabel = plan.examShift === "1"
+    ? "1st Shift"
+    : plan.examShift === "2"
+    ? "2nd Shift"
+    : null;
+
+  const examTimeDisplay = plan.examTime
+    ? new Date(`1970-01-01T${plan.examTime}`).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true })
+    : null;
 
   return (
     <>
@@ -152,14 +175,18 @@ export default function SeatPlanViewPage({ params }: { params: Promise<{ id: str
               {examDateDisplay && (
                 <p className="text-sm">Date: {examDateDisplay}</p>
               )}
-              <div className="flex justify-between items-start mt-1 px-1">
-                <p className="text-xs text-left">
+              <div className="relative flex items-start justify-center mt-1 px-1">
+                <p className="absolute left-1 text-xs text-left">
                   {roomAllocations.length > 1
                     ? `Page ${idx + 1} / ${roomAllocations.length}`
-                    : " "}
+                    : ""}
                 </p>
-                <p className="text-[11px] text-center leading-snug max-w-[60%]">{summary}</p>
-                <p className="text-xs font-semibold text-right">Room: {allocation.roomNumber}</p>
+                <p className="text-[11px] text-center leading-snug px-24">{roomSummary(allocation, plan)}</p>
+                <p className="absolute right-1 text-xs text-right">
+                  <span className="font-bold">Room:</span> {allocation.roomNumber}
+                  {shiftLabel && <span className="ml-2">| <span className="font-bold">Shift:</span> {shiftLabel}</span>}
+                  {examTimeDisplay && <span className="ml-2">| <span className="font-bold">Time:</span> {examTimeDisplay}</span>}
+                </p>
               </div>
             </div>
 
