@@ -35,6 +35,8 @@ interface DbSeatPlan {
   title: string;
   institute_name: string;
   exam_date: string;
+  exam_time: string | null;
+  exam_shift: string | null;
   pattern: string;
   seat_groups: unknown;
   room_allocations: unknown;
@@ -62,6 +64,8 @@ function dbToSeatPlan(row: DbSeatPlan): SeatPlan {
     title: row.title,
     instituteName: row.institute_name,
     examDate: row.exam_date,
+    examTime: row.exam_time ?? undefined,
+    examShift: (row.exam_shift as SeatPlan["examShift"]) ?? undefined,
     pattern: row.pattern as Pattern,
     seatGroups: (row.seat_groups ?? []) as SeatPlan["seatGroups"],
     roomAllocations: (row.room_allocations ?? []) as SeatPlan["roomAllocations"],
@@ -224,6 +228,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       title: plan.title,
       institute_name: plan.instituteName,
       exam_date: plan.examDate,
+      exam_time: plan.examTime ?? null,
+      exam_shift: plan.examShift ?? null,
       pattern: plan.pattern,
       seat_groups: plan.seatGroups,
       room_allocations: plan.roomAllocations,
